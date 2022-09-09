@@ -16,7 +16,10 @@ HTML_CACHE = pathlib.Path("cache")
 
 
 def init():
-    """Функция init подготавливает окружение (папку для отчетов)"""
+    """
+    Функция init подготавливает окружение (папку отчетов и кэша html
+    cтраниц)
+    """
     if not REPORTS_FOLDER.exists():
         REPORTS_FOLDER.mkdir()
 
@@ -33,8 +36,11 @@ def init():
 async def get_html_page(
     url: str, param: str, count: int
 ) -> str | Coroutine[Any, Any, str]:
-    """Корутина get_html_page делает асинхронный запрос к сайту и возвращает
-    содержимое страницы"""
+    """
+    Корутина get_html_page считывает асинхронно и возвращает HTML страницу из
+    кэша. Если HTML страница отсутствует в кэше, то выполняется асинхронный
+    запрос к сайту, страница сохраняется в кэш. Возвращает содержимое страницы.
+    """
     cache = HTML_CACHE / pathlib.Path(str(count) + ".html")
 
     if cache.exists():
@@ -65,14 +71,29 @@ async def get_html_page(
 
 
 def get_html_elements(data: Coroutine[Any, Any, bytes], css_class: str):
-    """Функция get_html_elements ищет и возвращает необходимые HTML элементы
-    на странице по CSS классу css_class"""
+    """
+    Функция get_html_elements ищет и возвращает необходимые HTML элементы
+    на странице по CSS классу css_class
+    """
     soup = BeautifulSoup(data, "html.parser")
     elements = soup.findAll("div", {"class": css_class})
     return elements
 
 
 def get_records():
+    """
+    Функция get_records формирует URL и запускает корутины, которые
+    скачивают web страницу, сохраняя ее в кэш, ищут на странцие нужный
+    HTNL элемент по его CSS классу, извлекают ссылку на скачивание .xls отчета,
+    скачивают отчет, открывает его и ищут в нем необходимый товар и
+    рыночную цену.
+
+    Все данные сохраняются в виде струутур данных в памяти.
+    Новыне корутины запускаются до первого скачанного отчета, который
+    не содержит нужной информации.
+
+    Возвращает структуру данных с датами и рыночными ценами.
+    """
     records: List[dict] = []
     schema = "https://"
     domain = "spimex.com"
@@ -137,8 +158,10 @@ def get_records():
 
 
 async def download_xls(link: str, path: pathlib.Path):
-    """Корутина download_xls асинхронно скачивает .xls файл в директорию
-    REPORTS_FOLDER и возвращает путь"""
+    """
+    Корутина download_xls асинхронно скачивает .xls файл в директорию
+    REPORTS_FOLDER и возвращает путь
+    """
     sema = asyncio.BoundedSemaphore(5)
 
     async with sema, aiohttp.ClientSession() as session:
@@ -152,8 +175,10 @@ async def download_xls(link: str, path: pathlib.Path):
 
 
 def get_market_price(path: pathlib.Path, rowname: str, colname: str) -> str:
-    """Функция get_market_price считывает файл .xls и ищет в нем нужное
-    занчение"""
+    """
+    Функция get_market_price считывает файл .xls и ищет в нем нужное
+    занчение.
+    """
     price: str = ""
     book = xlrd.open_workbook(path)
     sheet = book.sheet_by_index(0)
