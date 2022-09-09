@@ -1,0 +1,2 @@
+# Saint-Petersburg-International-Mercantile-Exchange
+An asynchronous Python script to fetch some data from [Saint Petersburg International Mercantile Exchange](https://spimex.com/) using [aiohttp](https://docs.aiohttp.org/en/stable/), [asyncio](https://docs.python.org/3/library/asyncio.html) and [aiofiles](https://github.com/Tinche/aiofiles) and draw a plot from it with [matplotlib](https://matplotlib.org/).
