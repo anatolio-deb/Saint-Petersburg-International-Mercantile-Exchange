@@ -1,0 +1,6 @@
+cache
+reports
+venv
+.vscode
+.mypy_cache
+.devcontainer
